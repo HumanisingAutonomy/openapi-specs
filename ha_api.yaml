@@ -1,0 +1,162 @@
+---
+openapi: 3.0.0
+info:
+  version: 0.0.0.1
+  title: Example HA APIs for Sittycia
+  description: This is the example set of APIs to run and execute a job using
+    Humanising Autonomy's services.
+tags:
+  - name: jobs
+    description: Access to jobs
+paths:
+  /jobs:
+    get:
+      summary: Returns all jobs
+      tags:
+        - jobs
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/jobs"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/jobs"
+    post:
+      summary: Creates a job
+      tags:
+        - jobs
+      requestBody:
+        description: The `job` to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/create_job_request"
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/create_job_response"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/create_job_response"
+        "400":
+          description: Validation exception
+        "409":
+          description: Scheduling conflict
+  "/jobs/{jobId}":
+    parameters:
+      - name: jobId
+        description: The unique identifier of the job
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Read a job
+      tags:
+        - jobs
+      responses:
+        "200":
+          description: The `job` corresponding to the provided `jobId`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/job"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    delete:
+      summary: deletes a job specified by the id
+      tags:
+        - jobs
+      parameters:
+        - name: jobId
+          description: The unique identifier of the `job`
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: The job is deleted
+        "404":
+          description: Job not found
+components:
+  schemas:
+    create_job_request:
+      type: object
+      required:
+        - cameraId
+        - startDateTime
+        - endDateTime
+      properties:
+        cameraId:
+          type: integer
+          format: int64
+        startDateTime:
+          type: string
+          format: date-time
+        endDateTime:
+          type: string
+          format: date-time
+    create_job_response:
+      type: object
+      required:
+        - jobId
+      properties:
+        jobId:
+          type: string
+          format: uuid
+    job:
+      type: object
+      required:
+        - jobId
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        cameraId:
+          type: integer
+          format: int64
+        startDateTime:
+          type: string
+          format: date-time
+        endDateTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+    jobs:
+      type: array
+      items:
+        $ref: "#/components/schemas/job"
+    error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          description: A human readable error message
+          type: string
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+security:
+  - ApiKey: []
